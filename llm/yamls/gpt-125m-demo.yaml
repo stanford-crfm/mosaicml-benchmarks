@@ -99,10 +99,11 @@ callbacks:
 
 loggers:
   progress_bar: {}
-  # wandb: {}
-  # s3:
-  #   bucket: my-bucket
-  #   prefix: my-folder
+  wandb: 
+    entity: stanford-mercury
+    project: mosaic-gpt2
+    name: "mosaicml-fsdp-flash-attention-demo-1"
+        
 
 # # Checkpointing
 # checkpoint_save_path: './{run_name}/checkpoints'

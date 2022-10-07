@@ -4,6 +4,12 @@ platform: r7z1
 gpu_type: a100_40gb
 gpu_num: 8
 
+integrations:
+  - integration_type: wandb
+
+    project: mosaic-gpt2
+
+    entity: stanford-mercury
 
 command: |
   echo 'get benchmarks'
@@ -24,9 +30,11 @@ command: |
   cd ..
   echo 'install python dependencies'
   pip install transformers==4.21.3 datasets==2.4.0 omegaconf wandb
+  echo 'check wandb'
+  wandb status
   echo 'prepare data set'
   cd benchmarks/llm
   python convert_c4.py --out_root ./my-copy-c4 --splits val
   python llm/data.py ./my-copy-c4 ./my-copy-c4
   echo 'launch gpt-2 training'
-  composer main.py yamls/gpt-125m.yaml
+  composer main.py yamls/gpt-125m-demo.yaml
