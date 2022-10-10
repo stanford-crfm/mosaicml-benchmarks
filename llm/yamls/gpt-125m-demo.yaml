@@ -103,12 +103,13 @@ loggers:
     entity: stanford-mercury
     project: mosaic-gpt2
     name: "mosaicml-fsdp-flash-attention-demo-1"
+    log_artifacts: true
         
 
 # # Checkpointing
-# checkpoint_save_path: './{run_name}/checkpoints'
-# checkpoint_save_interval: 500ba
-# num_checkpoints_to_keep: 1  # Important, this cleans up checkpoints saved to DISK
+checkpoint_save_path: './{run_name}/checkpoints'
+checkpoint_save_interval: 20000ba
+num_checkpoints_to_keep: 1  # Important, this cleans up checkpoints saved to DISK
 
 # # Load from local filesystem
 # load_path: ./gpt-125m/checkpoints/latest-rank{rank}.pt
