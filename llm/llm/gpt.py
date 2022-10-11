@@ -18,7 +18,7 @@ from composer.models.base import ComposerModel
 from flash_attn.flash_attention import FlashMHA
 
 from .hf_flash_gpt import GPT2FlashLMHeadModel
-from transformers.model.gpt2 import GPT2Config
+from transformers.models.gpt2 import GPT2Config
 
 class ComposerGPT(ComposerModel):
 
