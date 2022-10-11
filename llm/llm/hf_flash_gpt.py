@@ -13,7 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""PyTorch OpenAI GPT-2 model."""
+"""Modified HF GPT2 w/flash attention"""
 
 from einops import rearrange
 from flash_attn.flash_attn_interface import flash_attn_unpadded_qkvpacked_func

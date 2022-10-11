@@ -2,8 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 """
-A simple, flexible implementation of a GPT model.
-Inspired by https://github.com/karpathy/minGPT/blob/master/mingpt/model.py
+Modified HF GPT2 using Flash Attention then wrapped for Composer
 """
 
 import math
