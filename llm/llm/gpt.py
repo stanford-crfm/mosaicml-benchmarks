@@ -84,8 +84,8 @@ class GPTBlock(nn.Module):
             raise ValueError(f'Unknown attn_impl={cfg.attn_impl}')
         self.ln_2 = nn.LayerNorm(cfg.d_model, device=device)
         self.mlp = GPTMLP(cfg, device=device)
-        self.resid_attn_dropout = nn.Dropout(cfg.resid_pdrop)
-        self.resid_mlp_dropout = nn.Dropout(cfg.resid_pdrop)
+        self.resid_attn_dropout = nn.Dropout(cfg.resid_pdrop, inplace=True)
+        self.resid_mlp_dropout = nn.Dropout(cfg.resid_pdrop, inplace=True)
 
     def forward(self,
                 x: torch.Tensor,
@@ -107,7 +107,7 @@ class GPT(nn.Module):
             dict(
                 wte=nn.Embedding(cfg.vocab_size, cfg.d_model, device=device),
                 wpe=nn.Embedding(cfg.max_seq_len, cfg.d_model, device=device),
-                emb_drop=nn.Dropout(cfg.emb_pdrop),
+                emb_drop=nn.Dropout(cfg.emb_pdrop, inplace=True),
                 blocks=nn.ModuleList([
                     GPTBlock(cfg, device=device) for _ in range(cfg.n_layers)
                 ]),
