@@ -95,7 +95,7 @@ loggers:
 
 # # Checkpointing
 checkpoint_save_path: './{run_name}/checkpoints'
-checkpoint_save_interval: 20000ba
+checkpoint_save_interval: 5000ba
 num_checkpoints_to_keep: 1  # Important, this cleans up checkpoints saved to DISK
 
 # WandB specific naming
