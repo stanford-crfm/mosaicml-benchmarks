@@ -43,6 +43,8 @@ class ComposerGPT(ComposerModel):
         return targets
 
     def forward(self, batch):
+        print("INPUT IDS")
+        print(batch(['input_ids']))
         logits = self.model(input_ids=batch['input_ids']).logits
         print("LOGITS")
         print(logits)
