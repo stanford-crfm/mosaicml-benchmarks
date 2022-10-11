@@ -48,7 +48,7 @@ class ComposerGPT(ComposerModel):
 
     def loss(self, outputs, batch):
         labels = batch['input_ids']
-        shift_logits = lm_logits[..., :-1, :].contiguous()
+        shift_logits = outputs[..., :-1, :].contiguous()
         shift_labels = labels[..., 1:].contiguous()
         return F.cross_entropy(shift_logits.view(-1, shift_logits.size(-1)), shift_labels.view(-1), ignore_index=-100)
         #targets = self.get_targets(batch)
