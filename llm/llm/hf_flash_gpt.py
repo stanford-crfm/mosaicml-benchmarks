@@ -170,6 +170,10 @@ class GPT2FlashAttention(nn.Module):
     def fsdp_wrap_fn(self, module):
         return isinstance(module, GPT2FlashBlock)
 
+    # Activation Checkpointing
+    def activation_checkpointing_fn(self, module):
+        return isinstance(module, GPT2FlashBlock)
+
     def prune_heads(self, heads):
         if len(heads) == 0:
             return
