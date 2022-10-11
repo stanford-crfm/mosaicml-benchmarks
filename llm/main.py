@@ -136,8 +136,11 @@ def main(cfg):
     if load_object_store is not None:
         name = list(load_object_store.keys())[0]
         kwargs = load_object_store[name]
-        load_object_store = build_object_store(name, kwargs)
-
+        if name in ['s3']:
+          load_object_store = build_object_store(name, kwargs)
+        elif name in ['wandb']:
+          load_object_store = build_logger(name, kwargs)
+    
     # Build the Trainer
     trainer = Trainer(
         run_name=cfg.get('run_name', os.environ['COMPOSER_RUN_NAME']),
@@ -158,6 +161,8 @@ def main(cfg):
         checkpoint_save_path=cfg.get('checkpoint_save_path', None),
         checkpoint_save_interval=cfg.get('checkpoint_save_interval', '1000ba'),
         num_checkpoints_to_keep=cfg.get('num_checkpoints_to_keep', -1),
+        save_artifact_name=cfg.get('save_artifact_name', '{run_name}/checkpoints/ep{epoch}-ba{batch}-rank{rank}.pt'),
+        save_latest_artifact_name=cfg.get('save_latest_artifact_name', '{run_name}/checkpoints/latest-rank{rank}'),
         load_path=cfg.get('load_path', None),
         load_object_store=load_object_store,
         load_weights_only=cfg.get('load_weights_only', False),
