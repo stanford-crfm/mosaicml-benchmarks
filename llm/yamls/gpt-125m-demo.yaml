@@ -60,7 +60,7 @@ optimizer:
   weight_decay: 0.0
 
 max_duration: 5000ba
-eval_interval: 500ba
+eval_interval: 5000ba
 global_train_batch_size: 256
 grad_clip_norm: 1.0
 
