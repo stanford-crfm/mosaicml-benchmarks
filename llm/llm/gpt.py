@@ -7,7 +7,6 @@ Modified HF GPT2 using Flash Attention then wrapped for Composer
 
 import math
 from typing import Any, Mapping
-import json
 
 import torch
 import torch.nn as nn
@@ -24,7 +23,7 @@ class ComposerGPT(ComposerModel):
     def __init__(self, cfg, device='meta'):
         super().__init__()
         # load GPT2 config from standard HF model config json
-        hf_config = GPT2Config.from_dict(json.loads(open(cfg.hf_config).read()))
+        hf_config = GPT2Config.from_json_file(cfg.hf_config)
         # build model with config
         self.model = GPT2FlashLMHeadModel(hf_config, device=device)
         self.train_metrics = {
