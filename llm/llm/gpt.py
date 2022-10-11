@@ -27,7 +27,6 @@ class ComposerGPT(ComposerModel):
         # build model with config
         self.model = GPT2FlashLMHeadModel(hf_config)
         self.model.to(device)
-        #self.model.apply(self.model._init_weights)
         self.train_metrics = {
             'LanguageCrossEntropy': LanguageCrossEntropy(hf_config.vocab_size),
             'Perplexity': Perplexity(),
@@ -43,28 +42,16 @@ class ComposerGPT(ComposerModel):
         return targets
 
     def forward(self, batch):
-        print("INPUT IDS")
-        print(batch['input_ids'])
-        logits = self.model(input_ids=batch['input_ids']).logits
-        print("LOGITS")
-        print(logits)
-        return logits
+        return self.model(input_ids=batch['input_ids']).logits
 
     def eval_forward(self, batch, outputs=None):
         return outputs if outputs is not None else self.forward(batch)
 
     def loss(self, outputs, batch):
-        #labels = batch['input_ids']
-        #shift_logits = outputs[..., :-1, :].contiguous()
-        #shift_labels = labels[..., 1:].contiguous()
-        #return F.cross_entropy(shift_logits.view(-1, shift_logits.size(-1)), shift_labels.view(-1), ignore_index=-100)
         targets = self.get_targets(batch)
-        result = F.cross_entropy(outputs.view(-1, outputs.size(-1)),
+        return F.cross_entropy(outputs.view(-1, outputs.size(-1)),
                                targets.view(-1),
                                ignore_index=-100)
-        print("LOSS")
-        print(result)
-        return result
 
     def get_metrics(self, is_train=False):
         return self.train_metrics if is_train else self.eval_metrics
