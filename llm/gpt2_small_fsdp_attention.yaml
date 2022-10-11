@@ -20,6 +20,7 @@ command: |
   git fetch
   git checkout tags/fsdp-alpha
   pip install -e .
+  pip install mosaicml[streaming]
   cd ..
   echo 'install flash attention'
   git clone https://github.com/HazyResearch/flash-attention.git
@@ -32,9 +33,5 @@ command: |
   pip install transformers==4.21.3 datasets==2.4.0 omegaconf wandb
   echo 'check wandb'
   wandb status
-  echo 'prepare data set'
-  cd benchmarks/llm
-  python convert_c4.py --out_root ./my-copy-c4 --splits val
-  python llm/data.py ./my-copy-c4 ./my-copy-c4
   echo 'launch gpt-2 training'
   composer main.py yamls/gpt-125m-demo.yaml
