@@ -27,7 +27,7 @@ class ComposerGPT(ComposerModel):
         # build model with config
         self.model = GPT2FlashLMHeadModel(hf_config)
         self.model.to(device)
-        model.apply(model._init_weights)
+        self.model.apply(self.model._init_weights)
         self.train_metrics = {
             'LanguageCrossEntropy': LanguageCrossEntropy(hf_config.vocab_size),
             'Perplexity': Perplexity(),
