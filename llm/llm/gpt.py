@@ -47,14 +47,14 @@ class ComposerGPT(ComposerModel):
         return outputs if outputs is not None else self.forward(batch)
 
     def loss(self, outputs, batch):
-        labels = batch['input_ids']
-        shift_logits = outputs[..., :-1, :].contiguous()
-        shift_labels = labels[..., 1:].contiguous()
-        return F.cross_entropy(shift_logits.view(-1, shift_logits.size(-1)), shift_labels.view(-1), ignore_index=-100)
-        #targets = self.get_targets(batch)
-        #return F.cross_entropy(outputs.view(-1, outputs.size(-1)),
-                               #targets.view(-1),
-                               #ignore_index=-100)
+        #labels = batch['input_ids']
+        #shift_logits = outputs[..., :-1, :].contiguous()
+        #shift_labels = labels[..., 1:].contiguous()
+        #return F.cross_entropy(shift_logits.view(-1, shift_logits.size(-1)), shift_labels.view(-1), ignore_index=-100)
+        targets = self.get_targets(batch)
+        return F.cross_entropy(outputs.view(-1, outputs.size(-1)),
+                               targets.view(-1),
+                               ignore_index=-100)
 
     def get_metrics(self, is_train=False):
         return self.train_metrics if is_train else self.eval_metrics
