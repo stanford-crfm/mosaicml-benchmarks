@@ -10,18 +10,7 @@ run_name: mosaicml-fsdp-flash-attention-demo-1
 
 # Model
 model:
-  tokenizer_name: *tokenizer_name
-  d_model: 768
-  n_heads: 12
-  n_layers: 12
-  mlp_ratio: 4
-  max_seq_len: *max_seq_len
-  vocab_size: 50257
-  init_std: 0.02
-  attn_pdrop: 0.0
-  resid_pdrop: 0.0
-  emb_pdrop: 0.0
-  attn_impl: flash
+  hf_config: hf_configs/mistral_gpt2_small.json
 
 # Dataloaders
 train_loader:
