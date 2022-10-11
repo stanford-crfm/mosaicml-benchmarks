@@ -43,6 +43,7 @@ class ComposerGPT(ComposerModel):
 
     def forward(self, batch):
         logits = self.model(input_ids=batch['input_ids']).logits
+        print("LOGITS")
         print(logits)
         return logits
 
@@ -58,6 +59,7 @@ class ComposerGPT(ComposerModel):
         result = F.cross_entropy(outputs.view(-1, outputs.size(-1)),
                                targets.view(-1),
                                ignore_index=-100)
+        print("LOSS")
         print(result)
         return result
 
