@@ -34,4 +34,5 @@ command: |
   echo 'check wandb'
   wandb status
   echo 'launch gpt-2 training'
+  cd benchmarks/llm
   composer main.py yamls/gpt-125m-demo.yaml
