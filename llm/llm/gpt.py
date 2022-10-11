@@ -41,7 +41,7 @@ class ComposerGPT(ComposerModel):
         return targets
 
     def forward(self, batch):
-        return self.model(batch['input_ids'])
+        return self.model(input_ids=batch['input_ids'], labels=batch['input_ids'])
 
     def eval_forward(self, batch, outputs=None):
         return outputs if outputs is not None else self.forward(batch)
