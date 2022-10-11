@@ -497,7 +497,7 @@ class GPT2PreTrainedModel(PreTrainedModel):
         super().__init__(*inputs, **kwargs)
 
     def param_init_fn(self, module):
-        self._init_weights(self, module)
+        self._init_weights(module)
 
     def _init_weights(self, module):
         """Initialize the weights."""
