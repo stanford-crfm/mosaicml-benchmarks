@@ -42,7 +42,9 @@ class ComposerGPT(ComposerModel):
         return targets
 
     def forward(self, batch):
-        return self.model(input_ids=batch['input_ids']).logits
+        logits = self.model(input_ids=batch['input_ids']).logits
+        print(logits)
+        return logits
 
     def eval_forward(self, batch, outputs=None):
         return outputs if outputs is not None else self.forward(batch)
@@ -53,9 +55,11 @@ class ComposerGPT(ComposerModel):
         #shift_labels = labels[..., 1:].contiguous()
         #return F.cross_entropy(shift_logits.view(-1, shift_logits.size(-1)), shift_labels.view(-1), ignore_index=-100)
         targets = self.get_targets(batch)
-        return F.cross_entropy(outputs.view(-1, outputs.size(-1)),
+        result = F.cross_entropy(outputs.view(-1, outputs.size(-1)),
                                targets.view(-1),
                                ignore_index=-100)
+        print(result)
+        return result
 
     def get_metrics(self, is_train=False):
         return self.train_metrics if is_train else self.eval_metrics
