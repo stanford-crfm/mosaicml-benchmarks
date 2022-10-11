@@ -5,9 +5,6 @@ data_local: &data_local /tmp/mds-cache/pubmed-randomized
 max_seq_len: &max_seq_len 2048
 tokenizer_name: &tokenizer_name gpt2
 
-# Run Name
-run_name: mosaicml-fsdp-flash-attention-demo-1
-
 # Model
 model:
   hf_config: hf_configs/mistral_gpt2_small.json
