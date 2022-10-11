@@ -123,7 +123,7 @@ def load_tf_weights_in_gpt2(model, config, gpt2_checkpoint_path):
     return model
 
 
-class GPT2Attention(nn.Module):
+class GPT2FlashAttention(nn.Module):
     def __init__(self, config, is_cross_attention=False, layer_idx=None):
         super().__init__()
 
@@ -165,6 +165,10 @@ class GPT2Attention(nn.Module):
         self.resid_dropout = nn.Dropout(config.resid_pdrop)
 
         self.pruned_heads = set()
+
+    # FSDP Wrap function
+    def fsdp_wrap_fn(self, module):
+        return isinstance(module, GPT2FlashBlock)
 
     def prune_heads(self, heads):
         if len(heads) == 0:
@@ -394,7 +398,7 @@ class GPT2MLP(nn.Module):
         return hidden_states
 
 
-class GPT2Block(nn.Module):
+class GPT2FlashBlock(nn.Module):
     def __init__(self, config, layer_idx=None):
         super().__init__()
         hidden_size = config.hidden_size
@@ -701,7 +705,7 @@ DEPARALLELIZE_DOCSTRING = r"""
     "The bare GPT2 Model transformer outputting raw hidden-states without any specific head on top.",
     GPT2_START_DOCSTRING,
 )
-class GPT2Model(GPT2PreTrainedModel):
+class GPT2FlashModel(GPT2PreTrainedModel):
     _keys_to_ignore_on_load_missing = ["attn.masked_bias"]
 
     def __init__(self, config):
@@ -713,7 +717,7 @@ class GPT2Model(GPT2PreTrainedModel):
         self.wpe = nn.Embedding(config.max_position_embeddings, self.embed_dim)
 
         self.drop = nn.Dropout(config.embd_pdrop)
-        self.h = nn.ModuleList([GPT2Block(config, layer_idx=i) for i in range(config.num_hidden_layers)])
+        self.h = nn.ModuleList([GPT2FlashBlock(config, layer_idx=i) for i in range(config.num_hidden_layers)])
         self.ln_f = nn.LayerNorm(self.embed_dim, eps=config.layer_norm_epsilon)
 
         # Model parallel
@@ -979,12 +983,12 @@ class GPT2Model(GPT2PreTrainedModel):
     """,
     GPT2_START_DOCSTRING,
 )
-class GPT2LMHeadModel(GPT2PreTrainedModel):
+class GPT2FlashLMHeadModel(GPT2PreTrainedModel):
     _keys_to_ignore_on_load_missing = [r"attn.masked_bias", r"attn.bias", r"lm_head.weight"]
 
     def __init__(self, config):
         super().__init__(config)
-        self.transformer = GPT2Model(config)
+        self.transformer = GPT2FlashModel(config)
         self.lm_head = nn.Linear(config.n_embd, config.vocab_size, bias=False)
 
         # Model parallel
