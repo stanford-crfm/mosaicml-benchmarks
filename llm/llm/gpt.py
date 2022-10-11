@@ -41,8 +41,7 @@ class ComposerGPT(ComposerModel):
         return targets
 
     def forward(self, batch):
-        return self.model(batch['input_ids'],
-                          key_padding_mask=batch['attention_mask'].bool())
+        return self.model(batch['input_ids'])
 
     def eval_forward(self, batch, outputs=None):
         return outputs if outputs is not None else self.forward(batch)
