@@ -4,7 +4,6 @@
 import os
 import sys
 
-import wandb
 from composer import Trainer
 from composer.callbacks import LRMonitor, MemoryMonitor, SpeedMonitor
 from composer.loggers import ObjectStoreLogger, ProgressBarLogger, WandBLogger
@@ -14,6 +13,7 @@ from composer.optim.scheduler import (ConstantWithWarmupScheduler,
 from composer.utils import S3ObjectStore, dist, reproducibility
 from omegaconf import OmegaConf as om
 
+import wandb
 from llm.data_pubmed import build_dataloader
 from llm.gpt import ComposerGPT
 
@@ -140,7 +140,7 @@ def main(cfg):
           load_object_store = build_object_store(name, kwargs)
         elif name in ['wandb']:
           load_object_store = build_logger(name, kwargs)
-    
+
     # Build the Trainer
     trainer = Trainer(
         run_name=cfg.get('run_name', os.environ['COMPOSER_RUN_NAME']),
