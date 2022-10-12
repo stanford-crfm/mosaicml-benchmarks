@@ -66,7 +66,7 @@ grad_clip_norm: 1.0
 
 # System
 seed: 17
-device_train_microbatch_size: 8 # Hitting memory limits with 16 when resuming a run :(
+device_train_microbatch_size: 16 # Hitting memory limits with 16 when resuming a run :(
 precision: bf16
 
 # FSDP
