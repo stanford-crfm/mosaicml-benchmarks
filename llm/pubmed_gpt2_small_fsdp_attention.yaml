@@ -1,5 +1,5 @@
 image: mosaicml/pytorch:1.12.1_cu116-python3.9-ubuntu20.04 # #mosaicml/pytorch  # Name of the docker image to use
-run_name: gpt2_small_fsdp_attention
+run_name: pubmed_mistral_gpt2_small_fsdp_attention
 platform: r7z1
 gpu_type: a100_40gb
 gpu_num: 8
@@ -35,4 +35,4 @@ command: |
   wandb status
   echo 'launch gpt-2 training'
   cd benchmarks/llm
-  composer main.py yamls/gpt-125m-demo.yaml
+  composer main.py yamls/pubmed-mistral-gpt-125m.yaml
