@@ -141,4 +141,4 @@ class GPT2FlashLMHeadModel(GPT2LMHeadModel):
 
     # Activation Checkpointing
     def activation_checkpointing_fn(self, module):
-        return isinstance(module, GPTBlock)
+        return isinstance(module, GPT2Block)
