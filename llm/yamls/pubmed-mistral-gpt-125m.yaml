@@ -7,7 +7,7 @@ tokenizer_name: &tokenizer_name gpt2
 
 # Model
 model:
-  hf_config: hf_configs/mistral_gpt2_small.json
+  hf_config: hf_configs/pubmed_mistral_gpt2_small.json
 
 # Dataloaders
 train_loader:
