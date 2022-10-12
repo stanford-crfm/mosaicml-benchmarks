@@ -15,7 +15,7 @@ from composer.utils import S3ObjectStore, dist, reproducibility
 from omegaconf import OmegaConf as om
 
 from llm.data_pubmed import build_dataloader
-from llm.gpt import ComposerGPT
+from llm.gpt_old import ComposerGPT
 
 
 def build_logger(name, kwargs):
