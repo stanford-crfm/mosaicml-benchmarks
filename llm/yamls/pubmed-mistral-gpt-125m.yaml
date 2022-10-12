@@ -50,7 +50,7 @@ scheduler:
   t_warmup: 4000ba
 
 optimizer:
-  name: adamw
+  name: decoupled_adamw
   lr: 6.0e-4
   betas:
     - 0.9
