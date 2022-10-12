@@ -73,7 +73,7 @@ precision: bf16
 fsdp_config:
   sharding_strategy: FULL_SHARD
   min_params: 1e8
-  mixed_precision: default
+  mixed_precision: pure
   activation_checkpointing: false
   activation_cpu_offload: false
   verbose: true

@@ -95,7 +95,6 @@ def main(cfg):
     # Read FSDP Config as a dict
     fsdp_config = cfg.get('fsdp_config', None)
     fsdp_config = om.to_container(fsdp_config, resolve=True) if fsdp_config else None
-    fsdp_config['mixed_precision'] = 'pure'
 
     # Build Model
     # For fast initialization, use `meta` device
