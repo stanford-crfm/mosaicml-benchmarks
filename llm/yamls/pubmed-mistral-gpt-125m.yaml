@@ -73,7 +73,7 @@ precision: bf16
 fsdp_config:
   sharding_strategy: FULL_SHARD
   min_params: 1e8
-  mixed_precision: pure
+  mixed_precision: default
   activation_checkpointing: false
   activation_cpu_offload: false
   verbose: true
@@ -87,11 +87,11 @@ callbacks:
 
 loggers:
   progress_bar: {}
-  wandb: 
+  wandb:
     entity: stanford-mercury
     project: mosaic-gpt2
     log_artifacts: true
-        
+
 
 # # Checkpointing
 checkpoint_save_path: './{run_name}/checkpoints'
