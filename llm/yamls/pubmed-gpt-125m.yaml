@@ -2,7 +2,7 @@
 data_remote: &data_remote s3://crfm-pubmed/pubmed-randomized
 #data_local: &data_local ./my-copy-c4
 data_local: &data_local /tmp/mds-cache/pubmed-randomized
-max_seq_len: &max_seq_len 2048
+max_seq_len: &max_seq_len 1024
 tokenizer_name: &tokenizer_name gpt2
 
 # Model
@@ -61,7 +61,7 @@ optimizer:
 
 max_duration: 5000ba
 eval_interval: 5000ba
-global_train_batch_size: 256
+global_train_batch_size: 512
 grad_clip_norm: 1.0
 
 # System
