@@ -12,6 +12,7 @@ integrations:
     entity: stanford-mercury
 
 command: |
+  pip install --upgrade pip
   echo 'get benchmarks'
   git clone https://github.com/stanford-crfm/mosaicml-benchmarks.git benchmarks
   echo 'install composer tag=fsdp-alpha'
