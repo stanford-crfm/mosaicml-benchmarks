@@ -15,7 +15,7 @@ from composer.metrics.nlp import LanguageCrossEntropy, Perplexity
 from composer.models.base import ComposerModel
 from flash_attn.flash_attention import FlashMHA
 from transformers.models.gpt2 import GPT2Config
-
+from transformers.models.gpt2.modeling_gpt2 import GPT2LMHeadModel
 from .hf_flash_gpt_2 import GPT2FlashLMHeadModel
 
 
@@ -26,8 +26,14 @@ class ComposerGPT(ComposerModel):
         # load GPT2 config from standard HF model config json
         hf_config = GPT2Config.from_json_file(cfg.hf_config)
         # build model with config
-        self.model = GPT2FlashLMHeadModel(hf_config)
-        self.model.to(device)
+        model_class = hf_config.architectures[0]
+        if model_class == 'GPT2LMHeadModel':
+            self.model = GPT2LMHeadModel(hf_config)
+        elif model_class == 'GPT2FlashLMHeadModel':
+            self.model = GPT2FlashLMHeadModel(hf_config)
+            self.model.to(device)
+        else:
+            raise ValueError(f'Not sure how to build model_class={model_class}')
         self.train_metrics = {
             'LanguageCrossEntropy': LanguageCrossEntropy(hf_config.vocab_size),
             'Perplexity': Perplexity(),

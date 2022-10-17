@@ -21,7 +21,7 @@ from typing import Optional, Tuple, Union
 
 import torch
 from einops import rearrange
-from flash_attn.flash_attn_interface import flash_attn_unpadded_qkvpacked_func
+from flash_attn.flash_attention import FlashAttention
 from torch import nn
 from transformers.models.gpt2.configuration_gpt2 import GPT2Config
 from transformers.models.gpt2.modeling_gpt2 import (
@@ -32,8 +32,13 @@ from transformers.models.gpt2.modeling_gpt2 import (
 class GPT2FlashAttention(GPT2Attention):
     def __init__(self, config, is_cross_attention=False, layer_idx=None):
         super().__init__(config=config, is_cross_attention=is_cross_attention, layer_idx=layer_idx)
+        self.inner_attn = FlashAttention(softmax_scale=None, attention_dropout=config.attn_pdrop)
         if self.reorder_and_upcast_attn:
-            raise ValueError('GPT2FlashAttention does not support reorder_and_upcast_attn')
+            raise ValueError('GPT2FlashAttention does not support reorder_and_upcast_attn.')
+        if self.scale_attn_by_inverse_layer_idx:
+            raise ValueError('GPT2FlashAttention does not support scale_attn_by_inverse_layer_idx.')
+        if not self.scale_attn_weights:
+            raise ValueError('GPT2FlashAttention only supports scale_attn_weights=True.')
 
     def _attn(self, query, key, value, attention_mask=None, head_mask=None):
         # rearrange to flash attention form
@@ -41,7 +46,6 @@ class GPT2FlashAttention(GPT2Attention):
         value = rearrange(value, 'b h s d -> b s h d')
         query = rearrange(query, 'b h s d -> b s h d')
 
-        #assert query.dtype in [torch.float16, torch.bfloat16], f"{query.dtype}"
 
         # stack
         qkv = torch.stack([query,key,value], dim=2)
