@@ -118,16 +118,6 @@ def main(cfg):
     # Callbacks
     callbacks = [build_callback(name, callback_cfg) for name, callback_cfg in cfg.callbacks.items()]
 
-    # # (Optional) Load object store
-    # load_object_store = cfg.get('load_object_store', None)
-    # if load_object_store is not None:
-    #     name = list(load_object_store.keys())[0]
-    #     kwargs = load_object_store[name]
-    #     if name in ['s3']:
-    #       load_object_store = build_object_store(name, kwargs)
-    #     elif name in ['wandb']:
-    #       load_object_store = build_logger(name, kwargs)
-
     # Build the Trainer
     trainer = Trainer(
         run_name=cfg.get('run_name', os.environ['COMPOSER_RUN_NAME']),
@@ -148,12 +138,11 @@ def main(cfg):
         save_folder=cfg.get('save_folder', None),
         save_filename=cfg.get('save_filename', None),
         save_latest_filename=cfg.get('save_latest_filename', None),
-        save_interval=cfg.get('checkpoint_save_interval', '1000ba'),
+        save_interval=cfg.get('save_interval', '1000ba'),
         save_num_checkpoints_to_keep=cfg.get('save_num_checkpoints_to_keep', -1),
         # load_path=cfg.get('load_path', None),
-        # load_object_store=load_object_store,
         # load_weights_only=cfg.get('load_weights_only', False),
-        eval_subset_num_batches=100,
+        eval_subset_num_batches=cfg.get('eval_subset_num_batches', 5000),
     )
 
     print("Logging config...")
