@@ -57,7 +57,10 @@ class GPT2FlashAttention(GPT2Attention):
         qkv = rearrange(qkv, 'b s ... -> (b s) ...')
         max_s = seqlen
         cu_seqlens = torch.arange(0, (batch_size + 1) * seqlen, step=seqlen, dtype=torch.int32, device=qkv.device)
-        attn_pdrop = 0.1
+        if self.training:
+            attn_pdrop = 0.1
+        else:
+            attn_pdrop = 0.0
         softmax_scale = 1/float(math.sqrt(dk))
         output = flash_attn_unpadded_qkvpacked_func(
             qkv, cu_seqlens, max_s, attn_pdrop,
