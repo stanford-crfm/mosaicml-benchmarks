@@ -6,7 +6,7 @@ import sys
 
 from composer import Trainer
 from composer.callbacks import LRMonitor, MemoryMonitor, SpeedMonitor
-from composer.loggers import ObjectStoreLogger, ProgressBarLogger, WandBLogger
+from composer.loggers import ProgressBarLogger, WandBLogger
 from composer.optim import DecoupledAdamW
 from composer.optim.scheduler import (ConstantWithWarmupScheduler,
                                       CosineAnnealingWithWarmupScheduler)
@@ -26,20 +26,8 @@ def build_logger(name, kwargs):
         )
     elif name == 'wandb':
         return WandBLogger(**kwargs)
-    elif name == 's3':
-        object_store_logger = ObjectStoreLogger(
-            object_store_cls=S3ObjectStore,
-            object_store_kwargs=kwargs,
-        )
-        return object_store_logger
     else:
         raise ValueError(f'Not sure how to build logger: {name}')
-
-def build_object_store(name, kwargs):
-    if name == 's3':
-        return S3ObjectStore(**kwargs)
-    else:
-        raise ValueError(f'Not sure how to build object store: {name}')
 
 def build_callback(name, kwargs):
     if name == 'lr_monitor':
@@ -99,8 +87,7 @@ def main(cfg):
     # Build Model
     # For fast initialization, use `meta` device
     print('Initializing model...')
-    device = 'meta' if fsdp_config else 'cuda'
-    model = ComposerGPT(cfg=cfg.model, device=device)
+    model = ComposerGPT(cfg=cfg.model)
     n_params = sum(p.numel() for p in model.parameters())
     print(f'{n_params=:.2e}')
 
@@ -131,15 +118,15 @@ def main(cfg):
     # Callbacks
     callbacks = [build_callback(name, callback_cfg) for name, callback_cfg in cfg.callbacks.items()]
 
-    # (Optional) Load object store
-    load_object_store = cfg.get('load_object_store', None)
-    if load_object_store is not None:
-        name = list(load_object_store.keys())[0]
-        kwargs = load_object_store[name]
-        if name in ['s3']:
-          load_object_store = build_object_store(name, kwargs)
-        elif name in ['wandb']:
-          load_object_store = build_logger(name, kwargs)
+    # # (Optional) Load object store
+    # load_object_store = cfg.get('load_object_store', None)
+    # if load_object_store is not None:
+    #     name = list(load_object_store.keys())[0]
+    #     kwargs = load_object_store[name]
+    #     if name in ['s3']:
+    #       load_object_store = build_object_store(name, kwargs)
+    #     elif name in ['wandb']:
+    #       load_object_store = build_logger(name, kwargs)
 
     # Build the Trainer
     trainer = Trainer(
@@ -158,14 +145,13 @@ def main(cfg):
         grad_clip_norm=cfg.grad_clip_norm,
         grad_accum=device_train_grad_accum,
         fsdp_config=fsdp_config,
-        checkpoint_save_path=cfg.get('checkpoint_save_path', None),
-        checkpoint_save_interval=cfg.get('checkpoint_save_interval', '1000ba'),
-        num_checkpoints_to_keep=cfg.get('num_checkpoints_to_keep', -1),
-        save_artifact_name=cfg.get('save_artifact_name', '{run_name}/checkpoints/ep{epoch}-ba{batch}-rank{rank}.pt'),
-        save_latest_artifact_name=cfg.get('save_latest_artifact_name', '{run_name}/checkpoints/latest-rank{rank}'),
-        load_path=cfg.get('load_path', None),
-        load_object_store=load_object_store,
-        load_weights_only=cfg.get('load_weights_only', False),
+        # checkpoint_save_path=cfg.get('checkpoint_save_path', None),
+        # checkpoint_save_interval=cfg.get('checkpoint_save_interval', '1000ba'),
+        # num_checkpoints_to_keep=cfg.get('num_checkpoints_to_keep', -1),
+        # load_path=cfg.get('load_path', None),
+        # load_object_store=load_object_store,
+        # load_weights_only=cfg.get('load_weights_only', False),
+        eval_subset_num_batches=100,
     )
 
     print("Logging config...")

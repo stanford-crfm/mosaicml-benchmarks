@@ -1,7 +1,7 @@
 {
   "activation_function": "gelu",
   "architectures": [
-    "GPT2FlashLMHeadModel"
+    "GPT2LMHeadModel"
   ],
   "attn_pdrop": 0.1,
   "bos_token_id": 50256,

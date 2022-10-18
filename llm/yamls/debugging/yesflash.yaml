@@ -2,7 +2,7 @@
 data_remote: &data_remote s3://crfm-pubmed/pubmed-randomized
 #data_local: &data_local ./my-copy-c4
 data_local: &data_local /tmp/mds-cache/pubmed-randomized
-max_seq_len: &max_seq_len 2048
+max_seq_len: &max_seq_len 1024
 tokenizer_name: &tokenizer_name gpt2
 
 # Model
@@ -35,7 +35,7 @@ eval_loader:
     split: val
     tokenizer_name: *tokenizer_name
     max_seq_len: *max_seq_len
-    group_method: truncate
+    group_method: concat
     shuffle: false
   drop_last: false
   num_workers: 8
@@ -60,20 +60,20 @@ optimizer:
   weight_decay: 0.0
 
 max_duration: 5000ba
-eval_interval: 5000ba
+eval_interval: 20ba
 global_train_batch_size: 256
 grad_clip_norm: 1.0
 
 # System
 seed: 17
-device_train_microbatch_size: 1 # Hitting memory limits with 16 when resuming a run :(
+device_train_microbatch_size: 16 # Hitting memory limits with 16 when resuming a run :(
 precision: bf16
 
 # FSDP
 fsdp_config:
-  sharding_strategy: FULL_SHARD
+  sharding_strategy: SHARD_GRAD_OP
   min_params: 1e8
-  mixed_precision: default
+  mixed_precision: full
   activation_checkpointing: false
   activation_cpu_offload: false
   verbose: true
@@ -87,9 +87,9 @@ callbacks:
 
 loggers:
   progress_bar: {}
-  # wandb:
+  wandb:
   #   entity: stanford-mercury
-  #   project: mosaic-gpt2
+    project: composer-gpt2-debug
   #   log_artifacts: true
 
 

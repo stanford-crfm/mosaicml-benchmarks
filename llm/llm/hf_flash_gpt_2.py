@@ -41,35 +41,21 @@ class GPT2FlashAttention(GPT2Attention):
             raise ValueError('GPT2FlashAttention only supports scale_attn_weights=True.')
 
     def _attn(self, query, key, value, attention_mask=None, head_mask=None):
+        if head_mask is not None:
+            raise ValueError('GPT2FlashAttention._attn does not support "head_mask"')
         # rearrange to flash attention form
         key = rearrange(key, 'b h s d -> b s h d')
         value = rearrange(value, 'b h s d -> b s h d')
         query = rearrange(query, 'b h s d -> b s h d')
 
-
         # stack
         qkv = torch.stack([query,key,value], dim=2)
-        #qkv = torch.tensor(qkv,dtype=torch.bfloat16)
         assert qkv.dtype in [torch.float16, torch.bfloat16]
 
-        # flash attention logic
-        batch_size = qkv.shape[0]
-        seqlen = qkv.shape[1]
-        num_heads = qkv.shape[3]
-        dk = qkv.shape[4]
-        dk_per_head = int(dk)/int(num_heads)
-        qkv = rearrange(qkv, 'b s ... -> (b s) ...')
-        max_s = seqlen
-        cu_seqlens = torch.arange(0, (batch_size + 1) * seqlen, step=seqlen, dtype=torch.int32, device=qkv.device)
-        attn_pdrop = 0.1
-        softmax_scale = 1/float(math.sqrt(dk))
-        output = flash_attn_unpadded_qkvpacked_func(
-            qkv, cu_seqlens, max_s, attn_pdrop,
-            softmax_scale=softmax_scale, causal=True
-        )
-        output = rearrange(output, '(b s) ... -> b s ...', b=batch_size)
+        output, attn_weights = self.inner_attn(qkv, key_padding_mask=attention_mask,
+                                                need_weights=False, causal=True)
+
         output = rearrange(output, 'b s h d -> b h s d')
-        #output = torch.tensor(output, dtype=torch.float32)
         return output, None
 
 
@@ -125,24 +111,3 @@ class GPT2FlashLMHeadModel(GPT2LMHeadModel):
 
         # Initialize weights and apply final processing
         self.post_init()
-
-        # Special Case! When using the LMHeadModel, the weights of the self.lm_head and self.transformer.wte are tied.
-        # This tying occurs inside the `self.post_init()` function call above.
-        # This is a hurdle for FSDP because they need to be in the same FSDP block
-        # These lines ensures that both modules stay together in the top-most block
-        self.transformer._fsdp_wrap = False
-        self.transformer.wte._fsdp_wrap = False
-        self.lm_head._fsdp_wrap = False
-
-    # Meta tensor param init fn
-    def param_init_fn(self, module):
-        if isinstance(module, GPT2LMHeadModel):
-            module.post_init()
-
-    # FSDP Wrap function
-    def fsdp_wrap_fn(self, module):
-        return isinstance(module, GPT2Block)
-
-    # Activation Checkpointing
-    def activation_checkpointing_fn(self, module):
-        return isinstance(module, GPT2Block)

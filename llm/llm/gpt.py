@@ -19,9 +19,23 @@ from transformers.models.gpt2.modeling_gpt2 import GPT2LMHeadModel
 from .hf_flash_gpt_2 import GPT2FlashLMHeadModel
 
 
+def prepare_hf_gpt2_model_for_fsdp(model):
+    # Special Case! When using the LMHeadModel, the weights of the self.lm_head and self.transformer.wte are tied.
+    # This tying occurs inside the `self.post_init()` function call above.
+    # This is a hurdle for FSDP because they need to be in the same FSDP block
+    # These lines ensures that both modules stay together in the top-most block
+    model.transformer._fsdp_wrap = False
+    model.transformer.wte._fsdp_wrap = False
+    model.lm_head._fsdp_wrap = False
+
+    # FSDP Wrap and Activation Checkpoint every GPT2Block
+    for block in model.transformer.h:
+        block._fsdp_wrap = True
+        block._activation_checkpointing = True
+
 class ComposerGPT(ComposerModel):
 
-    def __init__(self, cfg, device='meta'):
+    def __init__(self, cfg):
         super().__init__()
         # load GPT2 config from standard HF model config json
         hf_config = GPT2Config.from_json_file(cfg.hf_config)
@@ -31,9 +45,12 @@ class ComposerGPT(ComposerModel):
             self.model = GPT2LMHeadModel(hf_config)
         elif model_class == 'GPT2FlashLMHeadModel':
             self.model = GPT2FlashLMHeadModel(hf_config)
-            self.model.to(device)
         else:
             raise ValueError(f'Not sure how to build model_class={model_class}')
+
+        # Tag layers to make the model ready for FSDP
+        prepare_hf_gpt2_model_for_fsdp(self.model)
+
         self.train_metrics = {
             'LanguageCrossEntropy': LanguageCrossEntropy(hf_config.vocab_size),
             'Perplexity': Perplexity(),
