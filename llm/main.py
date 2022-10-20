@@ -8,8 +8,9 @@ from composer import Trainer
 from composer.callbacks import LRMonitor, MemoryMonitor, SpeedMonitor
 from composer.loggers import ProgressBarLogger, WandBLogger
 from composer.optim import DecoupledAdamW
+from torch.optim import AdamW
 from composer.optim.scheduler import (ConstantWithWarmupScheduler,
-                                      CosineAnnealingWithWarmupScheduler)
+                                      CosineAnnealingWithWarmupScheduler, LinearWithWarmupScheduler)
 from composer.utils import S3ObjectStore, dist, reproducibility
 from omegaconf import OmegaConf as om
 
@@ -48,6 +49,9 @@ def build_scheduler(cfg):
         return CosineAnnealingWithWarmupScheduler(
             t_warmup=cfg.t_warmup,
             alpha_f=cfg.alpha_f)
+    elif cfg.name == 'linear_with_warmup':
+        return LinearWithWarmupScheduler(
+            t_warmup=cfg.t_warmup)
     else:
         raise ValueError(f'Not sure how to build scheduler: {cfg.name}')
 
@@ -101,13 +105,23 @@ def main(cfg):
     eval_loader = build_dataloader(cfg.eval_loader, device_eval_batch_size)
 
     # Optimizer
-    assert cfg.optimizer.name == 'decoupled_adamw'
-    optimizer = DecoupledAdamW(
-        model.parameters(),
-        lr=cfg.optimizer.lr,
-        betas=cfg.optimizer.betas,
-        eps=cfg.optimizer.eps,
-        weight_decay=cfg.optimizer.weight_decay)
+    if cfg.optimizer.name == 'adamw':
+        optimizer = AdamW(
+            model.parameters(),
+            lr=cfg.optimizer.lr,
+            betas=cfg.optimizer.betas,
+            eps=cfg.optimizer.eps,
+            weight_decay=cfg.optimizer.weight_decay)
+    elif cfg.optimizer.name == 'decoupled_adamw':
+        optimizer = DecoupledAdamW(
+            model.parameters(),
+            lr=cfg.optimizer.lr,
+            betas=cfg.optimizer.betas,
+            eps=cfg.optimizer.eps,
+            weight_decay=cfg.optimizer.weight_decay)
+    else:
+        raise ValueError(f'Requested unsupported optimizer: {cfg.optimizer.name}')
+    
 
     # Scheduler
     scheduler = build_scheduler(cfg.scheduler)

@@ -46,18 +46,18 @@ eval_loader:
 
 # Optimization
 scheduler:
-  name: cosine_with_warmup
-  t_warmup: 4000ba
+  name: linear_with_warmup
+  t_warmup: 10000ba
   alpha_f: 0.1
 
 optimizer:
-  name: decoupled_adamw
+  name: adamw
   lr: 6.0e-4
   betas:
     - 0.9
-    - 0.95
+    - 0.999
   eps: 1.0e-08
-  weight_decay: 0.0
+  weight_decay: 0.1
 
 max_duration: 400000ba
 eval_interval: 400000ba

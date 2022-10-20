@@ -54,7 +54,6 @@ class GPT2FlashAttention(GPT2Attention):
 
         output, attn_weights = self.inner_attn(qkv, key_padding_mask=attention_mask,
                                                 need_weights=False, causal=True)
-
         output = rearrange(output, 'b s h d -> b h s d')
         return output, None
 

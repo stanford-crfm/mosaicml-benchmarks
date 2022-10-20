@@ -23,13 +23,13 @@ command: |
   pip install -e .
   pip install mosaicml[streaming]
   cd ..
-  echo 'install flash attention'
-  git clone https://github.com/HazyResearch/flash-attention.git
-  cd flash-attention
-  ls -lhd *
-  echo 'run flash attention benchmark to verify'
-  PYTHONPATH=$PWD python benchmarks/benchmark_flash_attention.py
-  cd ..
+  #echo 'install flash attention'
+  #git clone https://github.com/HazyResearch/flash-attention.git
+  #cd flash-attention
+  #ls -lhd *
+  #echo 'run flash attention benchmark to verify'
+  #PYTHONPATH=$PWD python benchmarks/benchmark_flash_attention.py
+  #cd ..
   echo 'install python dependencies'
   pip install transformers==4.21.3 datasets==2.4.0 omegaconf wandb
   echo 'check wandb'
