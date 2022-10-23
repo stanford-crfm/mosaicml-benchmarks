@@ -4,9 +4,9 @@
     "GPT2FlashLMHeadModel"
   ],
   "attn_pdrop": 0.1,
-  "bos_token_id": 28894,
+  "bos_token_id": 28895,
   "embd_pdrop": 0.1,
-  "eos_token_id": 28894,
+  "eos_token_id": 28895,
   "initializer_range": 0.02,
   "layer_norm_epsilon": 1e-05,
   "model_type": "gpt2",
@@ -34,5 +34,5 @@
   "torch_dtype": "float32",
   "transformers_version": "4.12.3",
   "use_cache": false,
-  "vocab_size": 28895
+  "vocab_size": 28896
 }
