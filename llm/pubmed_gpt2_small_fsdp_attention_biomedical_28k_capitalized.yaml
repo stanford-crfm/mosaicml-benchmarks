@@ -36,4 +36,4 @@ command: |
   wandb status
   echo 'launch gpt-2 training'
   cd benchmarks/llm
-  composer main.py yamls/pubmed-mistral-gpt-125m.yaml
+  composer main.py yamls/pubmed-mistral-gpt-125m-28k-biomedical-tokenizer-capitalized.yaml 
