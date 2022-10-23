@@ -7,7 +7,7 @@ tokenizer_name: &tokenizer_name stanford-crfm/pubmed_gpt_tokenizer
 
 # Model
 model:
-  hf_config: hf_configs/pubmed_mistral_gpt2_small.json
+  hf_config: hf_configs/pubmed_mistral_gpt2_small_biomedical_tokenizer_28k_capitalized.json
 
 # Dataloaders
 train_loader:
