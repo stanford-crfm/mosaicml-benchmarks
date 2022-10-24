@@ -1,5 +1,5 @@
 image: mosaicml/pytorch:1.12.1_cu116-python3.9-ubuntu20.04 # #mosaicml/pytorch  # Name of the docker image to use
-run_name: pubmed_mistral_gpt2_small_fsdp_attention_w_biomedical_tokenizer_28k_capitalized
+run_name: llm_foundry_pubmed_gpt2_small_w_bio_tokenizer
 platform: r7z1
 gpu_type: a100_40gb
 gpu_num: 8
@@ -15,6 +15,8 @@ command: |
   pip install --upgrade pip
   echo 'get benchmarks'
   git clone https://github.com/stanford-crfm/mosaicml-benchmarks.git benchmarks
+  cd benchmarks ; git checkout pubmed-biomedical-tokenizer
+  cd ..
   echo 'install composer tag=fsdp-alpha'
   git clone https://github.com/mosaicml/composer.git
   cd composer
