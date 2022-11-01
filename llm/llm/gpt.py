@@ -16,7 +16,8 @@ from composer.models.base import ComposerModel
 from flash_attn.flash_attention import FlashMHA
 from transformers.models.gpt2 import GPT2Config
 from transformers.models.gpt2.modeling_gpt2 import GPT2LMHeadModel
-from .hf_flash_gpt_2 import GPT2FlashLMHeadModel
+
+from .hf_flash_gpt2 import GPT2FlashLMHeadModel
 
 
 def prepare_hf_gpt2_model_for_fsdp(model):
@@ -66,7 +67,7 @@ class ComposerGPT(ComposerModel):
         return targets
 
     def forward(self, batch):
-        return self.model(input_ids=batch['input_ids']).logits
+        return self.model(input_ids=batch['input_ids'], attention_mask=batch['attention_mask']).logits
 
     def eval_forward(self, batch, outputs=None):
         return outputs if outputs is not None else self.forward(batch)

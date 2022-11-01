@@ -15,13 +15,12 @@
 # limitations under the License.
 """Modified HF GPT2 w/flash attention"""
 
-import math
 import os
 from typing import Optional, Tuple, Union
 
 import torch
 from einops import rearrange
-from flash_attn.flash_attention import FlashAttention
+from flash_attn.flash_attn_interface import flash_attn_unpadded_qkvpacked_func
 from torch import nn
 from transformers.models.gpt2.configuration_gpt2 import GPT2Config
 from transformers.models.gpt2.modeling_gpt2 import (
@@ -32,17 +31,9 @@ from transformers.models.gpt2.modeling_gpt2 import (
 class GPT2FlashAttention(GPT2Attention):
     def __init__(self, config, is_cross_attention=False, layer_idx=None):
         super().__init__(config=config, is_cross_attention=is_cross_attention, layer_idx=layer_idx)
-        self.inner_attn = FlashAttention(softmax_scale=None, attention_dropout=config.attn_pdrop)
-        if self.reorder_and_upcast_attn:
-            raise ValueError('GPT2FlashAttention does not support reorder_and_upcast_attn.')
-        if self.scale_attn_by_inverse_layer_idx:
-            raise ValueError('GPT2FlashAttention does not support scale_attn_by_inverse_layer_idx.')
-        if not self.scale_attn_weights:
-            raise ValueError('GPT2FlashAttention only supports scale_attn_weights=True.')
+        self.attn_pdrop = config.attn_pdrop
 
     def _attn(self, query, key, value, attention_mask=None, head_mask=None):
-        if head_mask is not None:
-            raise ValueError('GPT2FlashAttention._attn does not support "head_mask"')
         # rearrange to flash attention form
         key = rearrange(key, 'b h s d -> b s h d')
         value = rearrange(value, 'b h s d -> b s h d')
@@ -52,9 +43,23 @@ class GPT2FlashAttention(GPT2Attention):
         qkv = torch.stack([query,key,value], dim=2)
         assert qkv.dtype in [torch.float16, torch.bfloat16]
 
-        output, attn_weights = self.inner_attn(qkv, key_padding_mask=attention_mask,
-                                                need_weights=False, causal=True)
+        # flash attention logic
+        batch_size = qkv.shape[0]
+        seqlen = qkv.shape[1]
+        dk = qkv.shape[4]
+        qkv = rearrange(qkv, 'b s ... -> (b s) ...')
+        max_s = seqlen
+        cu_seqlens = torch.arange(0, (batch_size + 1) * seqlen, step=seqlen, dtype=torch.int32, device=qkv.device)
+        attn_pdrop = self.attn_pdrop if self.training else 0.0
+        softmax_scale = (1.0 / (dk ** 0.5)) if self.scale_attn_weights else 1.0
+        softmax_scale = (softmax_scale / float(self.layer_idx + 1)) if self.scale_attn_by_inverse_layer_idx else softmax_scale
+        output = flash_attn_unpadded_qkvpacked_func(
+            qkv, cu_seqlens, max_s, attn_pdrop,
+            softmax_scale=softmax_scale, causal=True
+        )
+        output = rearrange(output, '(b s) ... -> b s ...', b=batch_size)
         output = rearrange(output, 'b s h d -> b h s d')
+
         return output, None
 
 
