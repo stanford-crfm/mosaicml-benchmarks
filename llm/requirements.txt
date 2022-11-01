@@ -1,4 +1,7 @@
-mosaicml[streaming] @ git+https://github.com/mosaicml/composer@feb856fd7ac05659cff3d1aa894155310ceb322a
+torchvision<0.14
+torchtext<0.14
+torch<1.13
+mosaicml[streaming]==0.11.0
 flash_attn @ git+https://github.com/HazyResearch/flash-attention.git@main
 transformers==4.21.3
 datasets==2.4.0
