@@ -41,13 +41,11 @@ class ComposerGPT(ComposerModel):
         # load GPT2 config from standard HF model config json
         hf_config = GPT2Config.from_json_file(cfg.hf_config)
         # build model with config
-        model_class = hf_config.architectures[0]
-        if model_class == 'GPT2LMHeadModel':
-            self.model = GPT2LMHeadModel(hf_config)
-        elif model_class == 'GPT2FlashLMHeadModel':
+        flash_attn = cfg.get('flash_attn', False)
+        if flash_attn:
             self.model = GPT2FlashLMHeadModel(hf_config)
         else:
-            raise ValueError(f'Not sure how to build model_class={model_class}')
+            self.model = GPT2LMHeadModel(hf_config)
 
         # Tag layers to make the model ready for FSDP
         prepare_hf_gpt2_model_for_fsdp(self.model)
