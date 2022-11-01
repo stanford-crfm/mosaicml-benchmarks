@@ -63,6 +63,7 @@ optimizer:
 
 max_duration: 100000ba
 eval_interval: 5000ba
+eval_subset_num_batches: 5000ba
 global_train_batch_size: 512
 grad_clip_norm: 1.0
 
@@ -82,7 +83,7 @@ fsdp_config:
   verbose: true
 
 # Logging
-progress_bar: false
+progress_bar: true
 log_to_console: true
 
 callbacks:

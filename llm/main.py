@@ -146,6 +146,7 @@ def main(cfg):
         schedulers=scheduler,
         max_duration=cfg.max_duration,
         eval_interval=cfg.eval_interval,
+        eval_subset_num_batches=cfg.eval_subset_num_batches,
         progress_bar=cfg.progress_bar,
         log_to_console=cfg.log_to_console,
         loggers=loggers,
