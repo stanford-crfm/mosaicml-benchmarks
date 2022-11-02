@@ -78,7 +78,7 @@ fsdp_config:
   sharding_strategy: FULL_SHARD
   min_params: 1e9
   mixed_precision: FULL
-  activation_checkpointing: false
+  activation_checkpointing: true
   activation_cpu_offload: false
   verbose: true
 
@@ -96,11 +96,12 @@ loggers:
   wandb: {}
 
 # Checkpoint to local filesystem or remote object store
-save_interval: 5000ba
-save_num_checkpoints_to_keep: 1  # Important, this cleans up checkpoints saved to DISK
-save_folder: ./{run_name}/checkpoints
+# save_interval: 5000ba
+# save_num_checkpoints_to_keep: 1  # Important, this cleans up checkpoints saved to DISK
+# save_folder: ./{run_name}/checkpoints
 # save_folder: s3://crfm-pubmed/checkpoints/{run_name}/checkpoints
 
 # Load from local filesystem or remote object store
 # load_path: ./gpt-125m/checkpoints/latest-rank{rank}.pt
 # load_path: s3://my-bucket/my-folder/gpt-125m/checkpoints/latest-rank{rank}.pt
+# load_path: ./artifacts/1b-biotok-flash-fsdp-gpus-64-NbbmPS.checkpoints.ep0-ba5000-rank0.pt:v0/ep0-ba5000-rank0.pt

@@ -15,7 +15,7 @@ from composer.metrics.nlp import LanguageCrossEntropy, Perplexity
 from composer.models.base import ComposerModel
 from flash_attn.flash_attention import FlashMHA
 from transformers.models.gpt2 import GPT2Config
-from transformers.models.gpt2.modeling_gpt2 import GPT2LMHeadModel
+from transformers.models.gpt2.modeling_gpt2 import GPT2Block, GPT2LMHeadModel
 
 from .hf_flash_gpt2 import GPT2FlashLMHeadModel
 
@@ -29,10 +29,10 @@ def prepare_hf_gpt2_model_for_fsdp(model):
     model.transformer.wte._fsdp_wrap = False
     model.lm_head._fsdp_wrap = False
 
+
     # FSDP Wrap and Activation Checkpoint every GPT2Block
-    for block in model.transformer.h:
-        block._fsdp_wrap = True
-        block._activation_checkpointing = True
+    model.fsdp_wrap_fn = lambda module: isinstance(module, GPT2Block)
+    model.activation_checkpointing_fn = lambda module: isinstance(module, GPT2Block)
 
 class ComposerGPT(ComposerModel):
 
