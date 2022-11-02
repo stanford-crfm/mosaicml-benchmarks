@@ -4,11 +4,11 @@ max_seq_len: &max_seq_len 1024
 tokenizer_name: &tokenizer_name stanford-crfm/pubmed_gpt_tokenizer
 
 # Run Name
-run_name: gpt-1b
+run_name: gpt-3b
 
 # Model
 model:
-  hf_config: hf_configs/final/gpt-1b-biotok.json
+  hf_config: hf_configs/final/gpt-3b-biotok.json
   flash_attn: true
 
 # Dataloaders
@@ -54,23 +54,23 @@ scheduler:
 
 optimizer:
   name: decoupled_adamw
-  lr: 2.0e-4
+  lr: 1.6e-4
   betas:
     - 0.9
     - 0.95
   eps: 1.0e-08
-  weight_decay: 2.0e-5
+  weight_decay: 1.6e-5
 
-max_duration: 100000ba
+max_duration: 300000ba
 eval_interval: 5000ba
-eval_subset_num_batches: 5000
-global_train_batch_size: 512
+eval_subset_num_batches: 1000
+global_train_batch_size: 1024
 grad_clip_norm: 1.0
 
 # System
 seed: 17
 # device_train_microbatch_size: auto
-device_train_microbatch_size: 16
+device_train_microbatch_size: 8
 precision: bf16
 
 # FSDP
