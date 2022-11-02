@@ -4,6 +4,7 @@
 import os
 import sys
 import warnings
+from urllib.parse import urlparse
 
 from composer import Trainer
 from composer.callbacks import LRMonitor, MemoryMonitor, SpeedMonitor
@@ -86,9 +87,19 @@ def update_batch_size_info(cfg):
     cfg.device_eval_microbatch_size = device_eval_microbatch_size
     return cfg
 
+def get_load_params(cfg):
+    load_path = cfg.get('load_path', None)
+    if load_path and load_path.startswith('wandb'):
+        url = urlparse(load_path)
+        entity, project = url.netloc.split(':')
+        load_object_store = WandBLogger(entity=entity, project=project)
+        return load_path, load_object_store
+    else:
+        return load_path, None
+
 def log_config(cfg):
     print(om.to_yaml(cfg))
-    if 'wandb' in cfg.loggers:
+    if 'wandb' in cfg.get('loggers', {}):
         try:
             import wandb
         except ImportError as e:
@@ -135,6 +146,9 @@ def main(cfg):
     # Callbacks
     callbacks = [build_callback(name, callback_cfg) for name, callback_cfg in cfg.get('callbacks', {}).items()]
 
+    # Load object store
+    load_path, load_object_store = get_load_params(cfg)
+
     # Build the Trainer
     trainer = Trainer(
         run_name=cfg.run_name,
@@ -158,7 +172,8 @@ def main(cfg):
         save_folder=cfg.get('save_folder', None),
         save_interval=cfg.get('save_interval', '1000ba'),
         save_num_checkpoints_to_keep=cfg.get('save_num_checkpoints_to_keep', -1),
-        load_path=cfg.get('load_path', None),
+        load_path=load_path,
+        load_object_store=load_object_store,
         load_weights_only=cfg.get('load_weights_only', False),
     )
 
