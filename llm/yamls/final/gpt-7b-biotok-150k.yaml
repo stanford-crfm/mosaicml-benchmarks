@@ -8,7 +8,7 @@ run_name: gpt-7b
 
 # Model
 model:
-  hf_config: hf_configs/final/gpt-3b-biotok.json
+  hf_config: hf_configs/final/gpt-7b-biotok.json
   flash_attn: true
 
 # Dataloaders
@@ -61,7 +61,7 @@ optimizer:
   eps: 1.0e-08
   weight_decay: 1.2e-5
 
-max_duration: 300000ba
+max_duration: 150000ba # 300B tokens
 eval_interval: 5000ba
 eval_subset_num_batches: 1000
 global_train_batch_size: 2048
