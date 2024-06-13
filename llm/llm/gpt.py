@@ -15,19 +15,41 @@ from composer.metrics.nlp import LanguageCrossEntropy, Perplexity
 from composer.models.base import ComposerModel
 from flash_attn.flash_attention import FlashMHA
 from transformers.models.gpt2 import GPT2Config
+from transformers.models.gpt2.modeling_gpt2 import GPT2Block, GPT2LMHeadModel
 
-from .hf_flash_gpt_2 import GPT2FlashLMHeadModel
+from .hf_flash_gpt2 import GPT2FlashLMHeadModel
 
+
+def prepare_hf_gpt2_model_for_fsdp(model):
+    # Special Case! When using the LMHeadModel, the weights of the self.lm_head and self.transformer.wte are tied.
+    # This tying occurs inside the `self.post_init()` function call above.
+    # This is a hurdle for FSDP because they need to be in the same FSDP block
+    # These lines ensures that both modules stay together in the top-most block
+    model.transformer._fsdp_wrap = False
+    model.transformer.wte._fsdp_wrap = False
+    model.lm_head._fsdp_wrap = False
+
+
+    # FSDP Wrap and Activation Checkpoint every GPT2Block
+    model.fsdp_wrap_fn = lambda module: isinstance(module, GPT2Block)
+    model.activation_checkpointing_fn = lambda module: isinstance(module, GPT2Block)
 
 class ComposerGPT(ComposerModel):
 
-    def __init__(self, cfg, device='meta'):
+    def __init__(self, cfg):
         super().__init__()
         # load GPT2 config from standard HF model config json
         hf_config = GPT2Config.from_json_file(cfg.hf_config)
         # build model with config
-        self.model = GPT2FlashLMHeadModel(hf_config)
-        self.model.to(device)
+        flash_attn = cfg.get('flash_attn', False)
+        if flash_attn:
+            self.model = GPT2FlashLMHeadModel(hf_config)
+        else:
+            self.model = GPT2LMHeadModel(hf_config)
+
+        # Tag layers to make the model ready for FSDP
+        prepare_hf_gpt2_model_for_fsdp(self.model)
+
         self.train_metrics = {
             'LanguageCrossEntropy': LanguageCrossEntropy(hf_config.vocab_size),
             'Perplexity': Perplexity(),
@@ -43,7 +65,7 @@ class ComposerGPT(ComposerModel):
         return targets
 
     def forward(self, batch):
-        return self.model(input_ids=batch['input_ids']).logits
+        return self.model(input_ids=batch['input_ids'], attention_mask=batch['attention_mask']).logits
 
     def eval_forward(self, batch, outputs=None):
         return outputs if outputs is not None else self.forward(batch)

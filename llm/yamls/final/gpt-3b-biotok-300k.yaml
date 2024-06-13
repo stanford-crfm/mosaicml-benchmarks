@@ -1,0 +1,107 @@
+data_remote: &data_remote s3://crfm-pubmed/pubmed-randomized
+data_local: &data_local /tmp/mds-cache/pubmed-randomized
+max_seq_len: &max_seq_len 1024
+tokenizer_name: &tokenizer_name stanford-crfm/pubmed_gpt_tokenizer
+
+# Run Name
+run_name: gpt-3b
+
+# Model
+model:
+  hf_config: hf_configs/final/gpt-3b-biotok.json
+  flash_attn: true
+
+# Dataloaders
+train_loader:
+  dataset:
+    name: streaming_pubmed
+    remote: *data_remote
+    local: *data_local
+    split: train
+    tokenizer_name: *tokenizer_name
+    max_seq_len: *max_seq_len
+    group_method: concat
+    shuffle: true
+  drop_last: true
+  num_workers: 8
+  pin_memory: true
+  prefetch_factor: 2
+  persistent_workers: true
+  timeout: 0
+
+eval_loader:
+  dataset:
+    name: streaming_pubmed
+    remote: *data_remote
+    local: *data_local
+    split: val
+    tokenizer_name: *tokenizer_name
+    max_seq_len: *max_seq_len
+    group_method: concat
+    shuffle: false
+  drop_last: false
+  num_workers: 8
+  pin_memory: true
+  prefetch_factor: 2
+  persistent_workers: true
+  timeout: 0
+
+# Optimization
+scheduler:
+  name: cosine_with_warmup
+  t_warmup: 100ba
+  alpha_f: 0.1
+
+optimizer:
+  name: decoupled_adamw
+  lr: 1.6e-4
+  betas:
+    - 0.9
+    - 0.95
+  eps: 1.0e-08
+  weight_decay: 1.6e-5
+
+max_duration: 300000ba
+eval_interval: 5000ba
+eval_subset_num_batches: 1000
+global_train_batch_size: 1024
+grad_clip_norm: 1.0
+
+# System
+seed: 17
+# device_train_microbatch_size: auto
+device_train_microbatch_size: 8
+precision: bf16
+
+# FSDP
+fsdp_config:
+  sharding_strategy: FULL_SHARD
+  min_params: 1e9
+  mixed_precision: FULL
+  activation_checkpointing: true
+  activation_cpu_offload: false
+  verbose: true
+
+# Logging
+progress_bar: true
+log_to_console: true
+
+callbacks:
+  speed_monitor:
+    window_size: 10
+  lr_monitor: {}
+  memory_monitor: {}
+
+loggers:
+  wandb: {}
+
+# Checkpoint to local filesystem or remote object store
+save_interval: 5000ba
+save_num_checkpoints_to_keep: 1  # Important, this cleans up checkpoints saved to DISK
+save_folder: ./{run_name}/checkpoints
+# save_folder: s3://crfm-pubmed/checkpoints/{run_name}/checkpoints
+
+# Load from local filesystem or remote object store
+# load_path: ./gpt-125m/checkpoints/latest-rank{rank}.pt
+# load_path: s3://my-bucket/my-folder/gpt-125m/checkpoints/latest-rank{rank}.pt
+# load_path: ./artifacts/1b-biotok-flash-fsdp-gpus-64-NbbmPS.checkpoints.ep0-ba5000-rank0.pt:v0/ep0-ba5000-rank0.pt
